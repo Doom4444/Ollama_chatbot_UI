@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>X invest</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-brand">
+      <div class="logo">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#fbbf24"/>
+            </linearGradient>
+            <linearGradient id="logoLine" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#22c55e"/>
+              <stop offset="100%" stop-color="#4ade80"/>
+            </linearGradient>
+          </defs>
+          <path d="M8 8l10 12 10-12M8 32l10-12 10 12" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 26L14 18l6 6 10-14" stroke="url(#logoLine)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        </svg>
+      </div>
+      <h1><span class="brand-x">X</span> invest</h1>
+    </div>
+    <span class="model-badge" id="modelBadge">X invest AI-Assistant</span>
+    <div class="controls">
+      <button type="button" id="clearBtn">Clear chat</button>
+      <button type="button" class="primary" id="loadModelsBtn">Refresh models</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        <p>Send a message to start. Your Financial Advisor <kbd>X invest</kbd> is used.</p>
+        <p>Use <kbd>Enter</kbd> to send, <kbd>Shift+Enter</kbd> for new line.</p>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <details class="system-prompt-wrap" open>
+        <summary>System prompt (always sent with every message)</summary>
+        <textarea id="systemPrompt" rows="4" placeholder="Instructions for the model…">You are a financial-only assistant for X invest. You must ONLY answer questions about finance, investing, markets, stocks, bonds, accounting, economics, taxes, and related financial topics. If the user asks about anything not related to finance or investing, politely decline and say you can only help with financial questions. Keep answers clear and factual. you can also speak Arabic fluently. Match the user's language keep your answer as their prompt language.</textarea>
+      </details>
+      <div class="input-row">
+        <textarea id="userInput" placeholder="Type your message…" rows="1"></textarea>
+        <button type="button" id="sendBtn" title="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+  </main>
+
+  <script src="static/app.js"></script>
+</body>
+</html>
