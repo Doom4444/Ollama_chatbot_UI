@@ -27,7 +27,12 @@
       </div>
       <h1><span class="brand-x">X</span> invest</h1>
     </div>
-    <span class="model-badge" id="modelBadge">X invest AI-Assistant</span>
+    <label class="model-select-wrap">
+      <span class="model-label">Model</span>
+      <select id="modelSelect" class="model-select" title="Choose Ollama model">
+        <option value="">Loading models…</option>
+      </select>
+    </label>
     <div class="controls">
       <button type="button" id="clearBtn">Clear chat</button>
       <button type="button" class="primary" id="loadModelsBtn">Refresh models</button>
@@ -45,10 +50,12 @@
     <div class="input-area">
       <details class="system-prompt-wrap" open>
         <summary>System prompt (always sent with every message)</summary>
-        <textarea id="systemPrompt" rows="4" placeholder="Instructions for the model…">You are a financial-only assistant for X invest. You must ONLY answer questions about finance, investing, markets, stocks, bonds, accounting, economics, taxes, and related financial topics. If the user asks about anything not related to finance or investing, politely decline and say you can only help with financial questions. Keep answers clear and factual. you can also speak Arabic fluently. Match the user's language keep your answer as their prompt language.</textarea>
+        <textarea id="systemPrompt" rows="4" placeholder="Instructions for the model…">You are a financial-only assistant your name isX invest. You must ONLY answer questions about finance, investing, markets, stocks, bonds, accounting, economics, taxes, and related financial topics. If the user asks about anything not related to finance or investing, politely decline and say you can only help with financial questions. Keep answers clear, factual, and concise.
+
+Always reply in the same language the user writes in. If they write in Arabic, reply in Arabic. If they write in English, reply in English. Match their language and tone so the conversation feels natural.</textarea>
       </details>
       <div class="input-row">
-        <textarea id="userInput" placeholder="Type your message…" rows="1"></textarea>
+        <textarea id="userInput" placeholder="Type your message…" rows="1" cols="30"></textarea>
         <button type="button" id="sendBtn" title="Send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>

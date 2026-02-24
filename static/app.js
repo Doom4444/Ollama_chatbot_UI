@@ -1,5 +1,3 @@
-const DEFAULT_MODEL = "qwen2.5:3b-instruct-q4_K_M";
-
 const messagesEl = document.getElementById("messages");
 const emptyState = document.getElementById("emptyState");
 const userInput = document.getElementById("userInput");
@@ -7,11 +5,11 @@ const sendBtn = document.getElementById("sendBtn");
 const clearBtn = document.getElementById("clearBtn");
 const systemPrompt = document.getElementById("systemPrompt");
 const statusEl = document.getElementById("status");
-const modelBadge = document.getElementById("modelBadge");
+const modelSelect = document.getElementById("modelSelect");
 const loadModelsBtn = document.getElementById("loadModelsBtn");
 
 let messages = [];
-let currentModel = DEFAULT_MODEL;
+let currentModel = "";
 
 function hideEmptyState() {
   if (emptyState) emptyState.style.display = "none";
@@ -26,9 +24,9 @@ function setStatus(text, isError = false) {
   statusEl.className = "status" + (isError ? " error" : "");
 }
 
-function setModelBadge(name) {
-  modelBadge.textContent = name || DEFAULT_MODEL;
-  currentModel = name || DEFAULT_MODEL;
+function setCurrentModel(name) {
+  currentModel = name || "";
+  if (modelSelect) modelSelect.value = currentModel;
 }
 
 function buildMessagesForApi() {
@@ -42,7 +40,7 @@ function addMessage(role, content, meta = null) {
   const avatar = role === "user" ? "You" : "Qwen";
   div.innerHTML = `
     <span class="avatar">${avatar.slice(0, 1)}</span>
-    <div>
+    <div class="message-body">
       <div class="bubble">${escapeHtml(content)}</div>
       ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
     </div>
@@ -84,6 +82,11 @@ function appendToBubble(el, chunk) {
 async function sendMessage() {
   const text = userInput.value.trim();
   if (!text) return;
+
+  if (!currentModel) {
+    setStatus("Select a model from the dropdown first (or click Refresh models).", true);
+    return;
+  }
 
   userInput.value = "";
   userInput.style.height = "auto";
@@ -204,22 +207,56 @@ clearBtn.addEventListener("click", () => {
   setStatus("");
 });
 
-loadModelsBtn.addEventListener("click", async () => {
+function populateModelSelect(models) {
+  if (!modelSelect) return;
+  modelSelect.innerHTML = "";
+  if (!models || models.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No models — run: ollama pull <model>";
+    modelSelect.appendChild(opt);
+    setCurrentModel("");
+    return;
+  }
+  models.forEach((m) => {
+    const opt = document.createElement("option");
+    opt.value = m.name;
+    opt.textContent = m.name;
+    modelSelect.appendChild(opt);
+  });
+  setCurrentModel(models[0].name);
+}
+
+async function loadModels() {
   setStatus("Loading models…");
   try {
     const res = await fetch("/api/tags");
-    if (!res.ok) throw new Error("Failed to load models");
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || "Failed to load models");
+    }
     const data = await res.json();
     const models = data.models || [];
-    if (models.length) {
-      const preferred = models.find((m) => m.name && m.name.startsWith("qwen2.5"));
-      setModelBadge((preferred && preferred.name) || models[0].name || DEFAULT_MODEL);
-      setStatus("Models loaded.");
-    } else {
-      setModelBadge(DEFAULT_MODEL);
-      setStatus("No models found. Using default.");
-    }
+    populateModelSelect(models);
+    setStatus(models.length ? "Ready. Select a model and chat." : "No models found. Run: ollama pull <model>");
   } catch (err) {
     setStatus("Could not load models: " + err.message, true);
+    if (modelSelect) {
+      modelSelect.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Error — click Refresh models";
+      modelSelect.appendChild(opt);
+      setCurrentModel("");
+    }
   }
+}
+
+modelSelect.addEventListener("change", () => {
+  setCurrentModel(modelSelect.value);
 });
+
+loadModelsBtn.addEventListener("click", loadModels);
+
+// Load available models on page load so users can pick one they have
+loadModels();

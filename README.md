@@ -1,58 +1,128 @@
 # Ollama Chat UI
 
-A small web app to chat with your local **Ollama** model (any model you have). It uses a Python backend to proxy requests to Ollama and a simple frontend with streaming replies.
+A simple, friendly web interface to chat with **any model** running on your computer via [Ollama](https://ollama.com). No account needed—everything runs locally.
 
-## Prerequisites
+---
+
+## Quick start
+
+1. **Install and run Ollama** (if you haven’t already):  
+   [ollama.com](https://ollama.com) → download and install. Then pull a model, e.g.:
+   ```bash
+   ollama pull llama3.2
+   ```
+
+2. **Start this app:**
+   ```bash
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+3. **Open your browser** at **http://localhost:5000**
+
+4. **Pick a model** from the dropdown, type a message, and hit Send.
+
+---
+
+## What you need
 
 - **Python 3.8+**
-- List you available models in Ollama:
+- **Ollama** installed and running (the Ollama app or service must be on; you don’t need to keep `ollama run` open)
+- **At least one model** pulled in Ollama. To see your models:
+  ```bash
+  ollama list
+  ```
+  To pull a model you don’t have yet:
+  ```bash
+  ollama pull llama3.2
+  ```
 
+---
+
+## Setup (step by step)
+
+### 1. Clone or download this project
+
+### 2. Optional: use a virtual environment (recommended)
+
+**Windows (PowerShell or CMD):**
 ```bash
-  ollama ls
+python -m venv .venv
+.venv\Scripts\activate
 ```
 
-- **Ollama** Replace "YOUR MODEL NAME" with the name of the model you want to run:
-  ```bash
-  ollama run YOUR MODEL NAME
-  ```
-  Have Ollama model running in the background after it starts, by pressing on your keyboard:
-  ```bash
-  CTRL + D
-  ```
-  the app will call it when you send a message.
+**macOS / Linux:**
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-## Setup and run
+### 3. Install dependencies
 
-1. Create a virtual environment (optional but recommended):
-  ```bash
-   python -m venv .venv
-   .venv\Scripts\activate   # Windows
-   # source .venv/bin/activate  # macOS/Linux
-  ```
-2. Install dependencies:
-  ```bash
-   pip install -r requirements.txt
-  ```
-3. Start the app:
-  ```bash
-   python app.py
-  ```
-4. Open in the browser: **[http://localhost:5000](http://localhost:5000)**
+```bash
+pip install -r requirements.txt
+```
 
-## Features
+### 4. Run the app
 
-- **Streaming replies** – tokens appear as they are generated.
-- **Conversation history** – full chat is sent to the model so you can have a multi-turn dialogue.
-- **Optional system prompt** – expand “System prompt (optional)” and set instructions for the model.
-- **Clear chat** – start a new conversation.
-- **Refresh models** – reload the list of models from Ollama (model name is shown in the header).
+```bash
+python app.py
+```
+
+You should see something like: `Running on http://0.0.0.0:5000`
+
+### 5. Open in your browser
+
+Go to: **http://localhost:5000**
+
+---
+
+## Using the app
+
+| What to do | How |
+|------------|-----|
+| **Choose a model** | Use the **Model** dropdown in the header. Models are loaded when the page opens. |
+| **Refresh the model list** | Click **Refresh models** (e.g. after you run `ollama pull <model>`). |
+| **Send a message** | Type in the box and press **Enter** (or click the send button). Use **Shift+Enter** for a new line. |
+| **Set behavior** | Expand **System prompt** and edit the text; it’s sent with every message (e.g. “You are a helpful assistant”, or “Reply in the same language as the user”). |
+| **Start over** | Click **Clear chat** to begin a new conversation. |
+
+- **Streaming:** Replies appear as they’re generated.
+- **History:** The full conversation is sent to the model so you can have a multi-turn chat.
+
+---
+
+## If something goes wrong
+
+- **“Select a model from the dropdown first”**  
+  Pick a model from the **Model** menu. If the list is empty, click **Refresh models**. Make sure Ollama is running and you have at least one model (`ollama list`).
+
+- **“Cannot connect to Ollama”**  
+  Start the Ollama app (or ensure the Ollama service is running). The app expects Ollama at `http://localhost:11434` by default.
+
+- **No models in the dropdown**  
+  Pull at least one model, e.g. `ollama pull llama3.2`, then click **Refresh models** in the app.
+
+- **Ollama on another machine or port**  
+  Set the `OLLAMA_HOST` environment variable before starting the app, e.g.:
+  ```bash
+  set OLLAMA_HOST=http://192.168.1.10:11434
+  python app.py
+  ```
+  (Use `export OLLAMA_HOST=...` on macOS/Linux.)
+
+---
 
 ## Configuration
 
-- **Ollama URL**: By default the app uses `http://localhost:11434`. Override with the environment variable:
-  ```bash
-  set OLLAMA_HOST=http://localhost:11434
-  python app.py
-  ```
-- **Default model**: Edit `DEFAULT_MODEL` in `app.py` if you want another default than `iKhalid/ALLaM:7b`.
+| Setting | Description |
+|--------|--------------|
+| **Ollama URL** | Default: `http://localhost:11434`. Override with the `OLLAMA_HOST` environment variable. |
+| **System prompt** | Edit the text in the **System prompt** section in the UI; no code change needed. |
+| **Model** | Chosen in the UI from the models reported by Ollama; no config file to edit. |
 
+---
+
+## License
+
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for the full text. You may use, modify, and distribute it freely under the terms of that license.
