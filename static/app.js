@@ -33,11 +33,31 @@ function buildMessagesForApi() {
   return messages.map(({ role, content }) => ({ role, content }));
 }
 
+function detectLanguageHint(text) {
+  if (!text || text.length < 2) return "";
+  if (/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text)) {
+    return "The user wrote in Arabic. You MUST respond entirely in Arabic.";
+  }
+  if (/[\u4e00-\u9fff]/.test(text)) {
+    return "The user wrote in Chinese. You MUST respond entirely in Chinese.";
+  }
+  if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) {
+    return "The user wrote in Japanese. You MUST respond entirely in Japanese.";
+  }
+  if (/[\uac00-\ud7af]/.test(text)) {
+    return "The user wrote in Korean. You MUST respond entirely in Korean.";
+  }
+  if (/[\u0e00-\u0e7f]/.test(text)) {
+    return "The user wrote in Thai. You MUST respond entirely in Thai.";
+  }
+  return "";
+}
+
 function addMessage(role, content, meta = null) {
   hideEmptyState();
   const div = document.createElement("div");
   div.className = `message ${role}`;
-  const avatar = role === "user" ? "You" : "Qwen";
+  const avatar = role === "user" ? "You" : "X";
   div.innerHTML = `
     <span class="avatar">${avatar.slice(0, 1)}</span>
     <div class="message-body">
@@ -46,7 +66,7 @@ function addMessage(role, content, meta = null) {
     </div>
   `;
   messagesEl.appendChild(div);
-  div.scrollIntoView({ behavior: "smooth", block: "end" });
+  scrollChatToBottom();
   return div;
 }
 
@@ -60,7 +80,7 @@ function updateBubbleContent(el, content, showCursor = false) {
   const bubble = el.querySelector(".bubble");
   if (!bubble) return;
   bubble.innerHTML = escapeHtml(content) + (showCursor ? '<span class="cursor"></span>' : "");
-  el.scrollIntoView({ behavior: "smooth", block: "end" });
+  scrollChatToBottom();
 }
 
 function appendToBubble(el, chunk) {
@@ -76,7 +96,14 @@ function appendToBubble(el, chunk) {
   if (cursor) cursor.remove();
   bubble.appendChild(document.createElement("span"));
   bubble.lastChild.className = "cursor";
-  el.scrollIntoView({ behavior: "smooth", block: "end" });
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+  if (!messagesEl) return;
+  requestAnimationFrame(() => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
 }
 
 async function sendMessage() {
@@ -101,7 +128,11 @@ async function sendMessage() {
   setStatus("Thinking…");
 
   const apiMessages = buildMessagesForApi();
-  const system = (systemPrompt && systemPrompt.value && systemPrompt.value.trim) ? systemPrompt.value.trim() : "";
+  let system = (systemPrompt && systemPrompt.value && systemPrompt.value.trim) ? systemPrompt.value.trim() : "";
+  const langHint = detectLanguageHint(text);
+  if (langHint) {
+    system = system ? `${system}\n\n${langHint}` : langHint;
+  }
   if (system) {
     apiMessages.unshift({ role: "system", content: system });
   }
