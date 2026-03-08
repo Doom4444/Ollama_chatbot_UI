@@ -218,5 +218,5 @@ other_project/*
 Graduation Project1/*
 
 # RAG
-db/chroma/
-data/documents/
+db/chroma/*
+data/documents/*
