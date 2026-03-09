@@ -12,7 +12,7 @@ def stream_chat(payload):
         user_message = messages[-1]["content"]
 
         # Retrieve documents once
-        docs = retrieve_documents(user_message, k=3)
+        docs = retrieve_documents(user_message, k=5, mode="mmr")
 
         context = "\n\n".join(d.page_content for d in docs)
 

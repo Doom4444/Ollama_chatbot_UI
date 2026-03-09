@@ -1,40 +1,46 @@
 from rag.vector_store import get_vector_store
 
-def retrieve_documents(query, k=5, threshold=0.50):
+LOG_SEPARATOR = "=" * 60
+
+def retrieve_documents(query, k=3, mode="similarity", threshold=0.5):
 
     vector_store = get_vector_store()
-    results = vector_store.similarity_search_with_score(query, k=8)
+
+    print("\n" + LOG_SEPARATOR)
+    print(f"RETRIEVAL MODE: {mode.upper()}")
+    print(LOG_SEPARATOR)
+    print("QUERY:", query)
 
     docs = []
-    print("\n" + "="*60)
-    print("RETRIEVAL RESULTS")
-    print("="*60)
-    print("\nQUERY:", query)
 
-    for doc, score in results:
+    if mode == "mmr":
 
-        if score < threshold and len(doc.page_content) > 200:
+        docs = vector_store.max_marginal_relevance_search(
+            query,
+            k=k,
+            fetch_k=30,
+            lambda_mult=0.5
+        )
 
-            print("SCORE:", score)
+        for doc in docs:
             print("SOURCE:", doc.metadata.get("source"))
+            print("PAGE:", doc.metadata.get("page"))
             print("DOC:", doc.page_content[:120])
             print("-----")
 
-            docs.append(doc)
+    else:
 
-    # fallback if nothing passed threshold
-    if len(docs) == 0:
-        docs = [doc for doc, _ in results[:k]]
+        results = vector_store.similarity_search_with_score(query, k=8)
 
-    # deduplicate
-    seen = set()
-    unique_docs = []
+        for doc, score in results:
 
-    for doc in docs:
-        text = doc.page_content.strip()
+            if score < threshold and len(doc.page_content) > 200:
 
-        if text not in seen:
-            unique_docs.append(doc)
-            seen.add(text)
+                print("SCORE:", score)
+                print("SOURCE:", doc.metadata.get("source"))
+                print("DOC:", doc.page_content[:120])
+                print("-----")
 
-    return unique_docs[:k]
+                docs.append(doc)
+
+    return docs[:k]

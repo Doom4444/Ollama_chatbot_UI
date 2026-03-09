@@ -143,6 +143,43 @@ You should see something like: `Ingested 42 chunks.`
 - Start the app (`python app.py`), open **http://localhost:5000**, choose a model, and send messages.
 - Each message triggers a search over your ingested documents; the model is instructed to answer from that context only and to say it doesn’t know when the answer isn’t in the context.
 
+### Retrieval modes (Similarity vs MMR)
+
+This project supports two retrieval strategies:
+
+- **Similarity search**: returns the top-\(k\) most similar chunks to your question.
+- **MMR search (Max Marginal Relevance)**: returns the top-\(k\) chunks while also encouraging **diversity** (reduces near-duplicate chunks and often improves coverage for broad questions).
+
+#### Using MMR (enabled by default)
+
+The chat backend currently retrieves documents like this (MMR on, \(k=5\)):
+
+```python
+docs = retrieve_documents(user_message, k=5, mode="mmr")
+```
+
+You can find it in `services/llm_service.py`.
+
+MMR is executed in `rag/retriever.py` via:
+
+- `fetch_k=30`: how many candidates are fetched before selecting the final \(k\)
+- `lambda_mult=0.5`: diversity balance (closer to **1.0** = more like pure similarity, closer to **0.0** = more diverse)
+
+If you want to tune MMR, edit these values in `rag/retriever.py`:
+
+- **Increase `fetch_k`**: better diversity selection but slower retrieval
+- **Adjust `lambda_mult`**: trade off relevance vs diversity
+
+#### Switching back to similarity search
+
+If you prefer plain similarity retrieval, change the call in `services/llm_service.py` to:
+
+```python
+docs = retrieve_documents(user_message, k=5, mode="similarity")
+```
+
+In similarity mode, `rag/retriever.py` uses `similarity_search_with_score` and applies a simple threshold filter before returning the final top-\(k\).
+
 ### RAG summary
 
 | Step | Action |
@@ -176,6 +213,21 @@ You should see something like: `Ingested 42 chunks.`
 
 - **RAG: “I don’t know” or answers not using my documents**  
   Ensure you’ve run the ingest after putting PDFs in `data/documents/` (`python -c "from rag.ingest import ingest_documents; ingest_documents()"`). Confirm `nomic-embed-text` is pulled (`ollama list`). If you added or updated PDFs, run the ingest again.
+
+- **RAG seems “stuck” on old document content**  
+  If you removed/changed PDFs significantly, you may want to delete the local vector DB at `db/chroma/` and then re-run ingest.
+
+  **Windows (PowerShell):**
+  ```bash
+  Remove-Item -Recurse -Force .\db\chroma
+  python -c "from rag.ingest import ingest_documents; ingest_documents()"
+  ```
+
+  **macOS / Linux:**
+  ```bash
+  rm -rf ./db/chroma
+  python -c "from rag.ingest import ingest_documents; ingest_documents()"
+  ```
 
 - **Ingest fails or “No module named 'langchain_...'”**  
   Install dependencies: `pip install -r requirements.txt`. Run the ingest from the project root so `rag` and `data/documents` are found.
